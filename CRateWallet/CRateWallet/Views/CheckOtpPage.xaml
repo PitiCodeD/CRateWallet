@@ -4,7 +4,6 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:binding="clr-namespace:CRateWallet.ViewModels"
-             xmlns:shapes="clr-namespace:Stormlion.ShapeControl;assembly=Stormlion.ShapeControl"
              x:Name="TheCheckOtpPage"
              mc:Ignorable="d"
              NavigationPage.HasNavigationBar="False"
