@@ -32,7 +32,7 @@ namespace CRateWallet.Views
 
         private void CheckEmailPageMethod()
         {
-            Navigation.PushAsync(new CheckOtpPage(thisEmail));
+            Navigation.PopToRootAsync();
         }
     }
 }

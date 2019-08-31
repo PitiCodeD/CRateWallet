@@ -17,7 +17,7 @@
             <Grid Margin="15" HorizontalOptions="FillAndExpand">
                 <Image Source="back" HorizontalOptions="StartAndExpand">
                     <Image.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding GoToCheckOtpPage}"/>
+                        <TapGestureRecognizer Command="{Binding GoToRootPage}"/>
                     </Image.GestureRecognizers>
                 </Image>
                 <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">

@@ -26,6 +26,7 @@ namespace CRateWallet.Views
             thisCheck = check;
             thisEmail = email;
             thisName = name;
+            thisSurname = surname;
             thisBirthDate = birthDate;
             thisMobileNo = mobileNo;
             thisGender = gender;
@@ -60,8 +61,8 @@ namespace CRateWallet.Views
             {
                 BindingContext = new UserViewModels()
                 {
-                    Email = email,
                     CheckPin = check,
+                    Email = email,
                     ReferencePin = reference
                 };
             }

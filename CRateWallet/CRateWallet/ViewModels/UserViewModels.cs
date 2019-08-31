@@ -22,7 +22,7 @@ namespace CRateWallet.ViewModels
             GoBackPage = new Command(BackPageMethod);
             DeletePin = new Command(DeletePinMethod);
             GoToCheckPinPage = new Command(CheckCheckPinMethod);
-            GoToCheckOtpPage = new Command(CheckOtpPageMethod);
+            GoToRootPage = new Command(RootPageMethod);
             GoBackByPin = new Command<int>(BackByPinMethod);
             pinNumber = "";
             email = "";
@@ -33,7 +33,6 @@ namespace CRateWallet.ViewModels
             checkPin = 0;
             countBirthDate = 0;
             referencePin = "";
-
         }
 
         private int countBirthDate;
@@ -68,10 +67,10 @@ namespace CRateWallet.ViewModels
                 ImgPin = "lock";
                 BlackTextPin = "สร้างรหัสผ่าน";
                 GrayTextPin = "ใส่รหัสผ่านของคุณ";
-                CheckRefPin = true;
+                CheckRefPin = false;
                 SentPinCom = null;
-                CheckSentPin = true;
-                CheckWanPin = true;
+                CheckSentPin = false;
+                CheckWanPin = false;
             }
             else if (checkPin == 2)
             {
@@ -79,21 +78,21 @@ namespace CRateWallet.ViewModels
                 ImgPin = "lock";
                 BlackTextPin = "ยืนยันรหัสผ่าน";
                 GrayTextPin = "ใส่รหัสผ่านของคุณอีกครั้ง";
-                CheckRefPin = true;
+                CheckRefPin = false;
                 SentPinCom = null;
-                CheckSentPin = true;
-                CheckWanPin = true;
+                CheckSentPin = false;
+                CheckWanPin = false;
             }
             else if (checkPin == 3)
             {
                 TitlePin = "การยืนยัน OTP";
                 ImgPin = "mail";
                 BlackTextPin = "กรุณาใส่ OTP\nเพื่อยืนยัน email ของคุณ";
-                GrayTextPin = "กรุณาใส่ OTP&#10;เพื่อยืนยัน email ของคุณ";
-                CheckRefPin = false;
-                SentPinCom = null;
-                CheckSentPin = false;
-                CheckWanPin = true;
+                GrayTextPin = "เราได้ส่ง OTP ไปที่ email ของคุณแล้ว";
+                CheckRefPin = true;
+                SentPinCom = "ส่ง OTP อีกครั้ง";
+                CheckSentPin = true;
+                CheckWanPin = false;
             }
             else
             {
@@ -146,6 +145,7 @@ namespace CRateWallet.ViewModels
             set
             {
                 checkPin = value;
+                DataPinPage();
                 OnPropertyChanged(nameof(CheckPin));
             }
         }
@@ -436,15 +436,15 @@ namespace CRateWallet.ViewModels
         }
 
         public ICommand GoToCheckEmailPage { get; set; }
-        private void CheckEmailPageMethod()
+        private async void CheckEmailPageMethod()
         {
-            CheckOtpPageMethod();
+            await Application.Current.MainPage.Navigation.PushAsync(new CheckPin(3, null, null, null, null, null, email, null, "ref. Wait API"));
         }
 
-        public ICommand GoToCheckOtpPage { get; set; }
-        private async void CheckOtpPageMethod()
+        public ICommand GoToRootPage { get; set; }
+        private async void RootPageMethod()
         {
-            await Application.Current.MainPage.Navigation.PushAsync(new CheckOtpPage(email));
+            await Application.Current.MainPage.Navigation.PopToRootAsync();
         }
 
         public ICommand InputOTP { get; set; }
@@ -489,7 +489,10 @@ namespace CRateWallet.ViewModels
                 else
                 {
                     WanningTextPin = check.Message;
-                    CheckWanPin = false;
+                    CheckWanPin = true;
+                    pinNumber = "";
+                    ChangeColorPin(0);
+
                 }
             }
             else if (checkPin == 3)
