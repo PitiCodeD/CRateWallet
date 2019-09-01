@@ -561,6 +561,7 @@ namespace CRateWallet.ViewModels
                 if (check.Status)
                 {
                     string[] perDate = birthDate.Split('/');
+                    gender += 1;
                     setDate = new DateTime(Int32.Parse(perDate[2]), Int32.Parse(perDate[1]), Int32.Parse(perDate[0]));
                     var dataToken = await Register();
                     if (dataToken == null)

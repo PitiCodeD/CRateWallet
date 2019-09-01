@@ -12,7 +12,9 @@ namespace CRateWallet
             InitializeComponent();
 
             //MainPage = new MainPage();
-            MainPage = new NavigationPage(new RegisEmailPage());
+            //MainPage = new NavigationPage(new RegisEmailPage());
+
+            MainPage = new NavigationPage(new RegisSuccess());
         }
 
         protected override void OnStart()
