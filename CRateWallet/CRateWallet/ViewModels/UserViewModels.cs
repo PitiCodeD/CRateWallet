@@ -1,18 +1,24 @@
 ﻿using CRateWallet.Models;
 using CRateWallet.Views;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace CRateWallet.ViewModels
 {
     public class UserViewModels : INotifyPropertyChanged
     {
+        private HttpClient client = new HttpClient();
+        private readonly HelperSetting helperSetting = new HelperSetting();
+
         public UserViewModels()
         {
             DataInDevice();
@@ -23,7 +29,8 @@ namespace CRateWallet.ViewModels
             DeletePin = new Command(DeletePinMethod);
             GoToCheckPinPage = new Command(CheckCheckPinMethod);
             GoToRootPage = new Command(RootPageMethod);
-            GoBackByPin = new Command<int>(BackByPinMethod);
+            GoBackByPin = new Command(BackByPinMethod);
+            GoToSentOtpRegis = new Command(SentOtpRegisMethod);
             pinNumber = "";
             email = "";
             name = "";
@@ -33,6 +40,7 @@ namespace CRateWallet.ViewModels
             checkPin = 0;
             countBirthDate = 0;
             referencePin = "";
+            setDate = default;
         }
 
         private int countBirthDate;
@@ -149,8 +157,6 @@ namespace CRateWallet.ViewModels
                 OnPropertyChanged(nameof(CheckPin));
             }
         }
-
-        
 
         private string pinNumber;
         public string PinNumber
@@ -280,7 +286,6 @@ namespace CRateWallet.ViewModels
         }
 
         private string titlePin;
-
         public string TitlePin
         {
             get
@@ -295,7 +300,6 @@ namespace CRateWallet.ViewModels
         }
 
         private string imgPin;
-
         public string ImgPin
         {
             get
@@ -407,6 +411,20 @@ namespace CRateWallet.ViewModels
             }
         }
 
+        private DateTime setDate;
+        public DateTime SetDate
+        {
+            get
+            {
+                return setDate;
+            }
+            set
+            {
+                setDate = value;
+                OnPropertyChanged(nameof(SetDate));
+            }
+        }
+
 
         private void CheckFormatBirthDate()
         {
@@ -438,9 +456,65 @@ namespace CRateWallet.ViewModels
         public ICommand GoToCheckEmailPage { get; set; }
         private async void CheckEmailPageMethod()
         {
-            await Application.Current.MainPage.Navigation.PushAsync(new CheckPin(3, null, null, null, null, null, email, null, "ref. Wait API"));
+            await GetRequestOtpForRegis();
         }
 
+        private async Task GetRequestOtpForRegis()
+        {
+            var dataOtp = await RequestOtpForRegis(email);
+            if (dataOtp == null)
+            {
+                await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                await Application.Current.MainPage.Navigation.PopToRootAsync();
+            }
+            else
+            {
+                if (dataOtp.Status == (int)StatusType.StatusRetureData.Success)
+                {
+                    string referenceOtp = "ref. " + dataOtp.Data;
+                    await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataOtp.Message, "ตกลง");
+                    await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SentOTPRegis, null, null, null, null, null, email, null, referenceOtp));
+                }
+                else if (dataOtp.Status == (int)StatusType.StatusRetureData.ShowMessage)
+                {
+                    await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", dataOtp.Message, "ตกลง");
+                }
+                else if (dataOtp.Status == (int)StatusType.StatusRetureData.NotShowMessage)
+                {
+                    await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                }
+                else
+                {
+                    await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                    await Application.Current.MainPage.Navigation.PopToRootAsync();
+                }
+            }
+        }
+
+        private async Task<ResultModel<string>> RequestOtpForRegis(string email)
+        {
+            try
+            {
+                string host = helperSetting.Host + "user/otpregis";
+                var objModel = new
+                {
+                    Text = email
+                };
+                StringContent requestMessage = new StringContent($"{JsonConvert.SerializeObject(objModel)}", Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(host, requestMessage);
+                var body = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ResultModel<string>>(body);
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<string>()
+                {
+                    Status = (int)StatusType.StatusRetureData.ShowMessage,
+                    Message = "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง"
+                };
+            }
+            
+        }
         public ICommand GoToRootPage { get; set; }
         private async void RootPageMethod()
         {
@@ -451,40 +525,96 @@ namespace CRateWallet.ViewModels
         private async void InputOTPMethod(string textOtp)
         {
             string value;
-            int checkOtp = Int32.Parse(textOtp);
-            if (checkOtp < 200)
+            value = textOtp.Substring(textOtp.Length - 1);
+            pinNumber = pinNumber + value;
+            string otp = pinNumber;
+            int count = otp.Length;
+            if (count == 6)
             {
-                value = textOtp.Substring(textOtp.Length - 1);
-                pinNumber = pinNumber + value;
-                string otp = pinNumber;
-                int count = otp.Length;
-                if (count == 6)
-                {
-                    await GoPageByPinAsync();
-                }
-                else
-                {
-                    ChangeColorPin(count);
-                }
+                await GoPageByPinAsync();
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("ERROE!!!", "SERVER ERROR", "OK");
+                ChangeColorPin(count);
             }
+        }
+
+        private async Task TestSecureStorage()
+        {
+            var refreshToken = await SecureStorage.GetAsync("RefreshToken");
+            var accessToken = await SecureStorage.GetAsync("AccessToken");
+            string a = "a";
+            string b = "b";
+            string c = "c";
+
         }
 
         private async Task GoPageByPinAsync()
         {
-            if (checkPin == 1)
+            if (checkPin == (int)StatusType.PinPage.SetPassword)
             {
-                await Application.Current.MainPage.Navigation.PushAsync(new CheckPin(2, name, surname, birthDate, mobileNo, gender, email, pinNumber, null));
+                await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.ReSetPaqssword, name, surname, birthDate, mobileNo, gender, email, pinNumber, null));
             }
-            else if (checkPin == 2)
+            else if (checkPin == (int)StatusType.PinPage.ReSetPaqssword)
             {
                 var check = CheckreRePin();
                 if (check.Status)
                 {
-                    await Application.Current.MainPage.Navigation.PushAsync(new RegisSuccess());
+                    string[] perDate = birthDate.Split('/');
+                    setDate = new DateTime(Int32.Parse(perDate[2]), Int32.Parse(perDate[1]), Int32.Parse(perDate[0]));
+                    var dataToken = await Register();
+                    if (dataToken == null)
+                    {
+                        await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                        await Application.Current.MainPage.Navigation.PopToRootAsync();
+                    }
+                    else
+                    {
+                        if (dataToken.Status == (int)StatusType.StatusRetureData.Success)
+                        {
+                            try
+                            {
+                                await SecureStorage.SetAsync("RefreshToken", dataToken.Data.RefreshToken);
+                                await SecureStorage.SetAsync("AccessToken", dataToken.Data.AccessToken);
+                                await TestSecureStorage();
+                                await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataToken.Message, "ตกลง");
+                                await Application.Current.MainPage.Navigation.PushAsync(new RegisSuccess());
+                            }
+                            catch (Exception)
+                            {
+                                await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "อุปกรณ์ของท่านไม่สามารถใฃ้แอพพลิเคชั่นนี้ได้", "ตกลง");
+                                await Application.Current.MainPage.Navigation.PopToRootAsync();
+                            }
+                            
+                        }
+                        else if (dataToken.Status == (int)StatusType.StatusRetureData.ShowMessage)
+                        {
+                            WanningTextPin = dataToken.Message;
+                            CheckWanPin = true;
+                            pinNumber = "";
+                            ChangeColorPin(0);
+                        }
+                        else if (dataToken.Status == (int)StatusType.StatusRetureData.NotShowMessage)
+                        {
+                            WanningTextPin = "ระบบไม่สามารถใช้ได้";
+                            CheckWanPin = true;
+                            pinNumber = "";
+                            ChangeColorPin(0);
+                        }
+                        else if (dataToken.Status == (int)StatusType.StatusRetureData.BackToFirstPage)
+                        {
+                            WanningTextPin = "ระบบไม่สามารถใช้ได้";
+                            CheckWanPin = true;
+                            pinNumber = "";
+                            ChangeColorPin(0);
+                            await Application.Current.MainPage.Navigation.PopToRootAsync();
+                        }
+                        else
+                        {
+                            await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                            await Application.Current.MainPage.Navigation.PopToRootAsync();
+                        }
+                    }
                 }
                 else
                 {
@@ -492,16 +622,104 @@ namespace CRateWallet.ViewModels
                     CheckWanPin = true;
                     pinNumber = "";
                     ChangeColorPin(0);
-
                 }
             }
-            else if (checkPin == 3)
+            else if (checkPin == (int)StatusType.PinPage.SentOTPRegis)
             {
-                await Application.Current.MainPage.Navigation.PushAsync(new UserData(email));
+                var dataCheckEmail = await VerifiedEmailForRegis();
+                if (dataCheckEmail == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                    await Application.Current.MainPage.Navigation.PopToRootAsync();
+                }
+                else
+                {
+                    if (dataCheckEmail.Status == (int)StatusType.StatusRetureData.Success)
+                    {
+                        await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataCheckEmail.Message, "ตกลง");
+                        await Application.Current.MainPage.Navigation.PushAsync(new UserData(email));
+                    }
+                    else if (dataCheckEmail.Status == (int)StatusType.StatusRetureData.ShowMessage)
+                    {
+                        WanningTextPin = dataCheckEmail.Message;
+                        CheckWanPin = true;
+                        pinNumber = "";
+                        ChangeColorPin(0);
+                    }
+                    else if (dataCheckEmail.Status == (int)StatusType.StatusRetureData.NotShowMessage)
+                    {
+                        WanningTextPin = "ระบบไม่สามารถใช้ได้";
+                        CheckWanPin = true;
+                        pinNumber = "";
+                        ChangeColorPin(0);
+                    }
+                    else
+                    {
+                        await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                        await Application.Current.MainPage.Navigation.PopToRootAsync();
+                    }
+                }
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("ERROE!!!", "SERVER ERROR", "OK");
+                await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดตอดต่อผู้ดูแล", "ตกลง");
+                await Application.Current.MainPage.Navigation.PopToRootAsync();
+            }
+        }
+
+        private async Task<ResultModel<RegisModel>> Register()
+        {
+            try
+            {
+                string host = helperSetting.Host + "user/register";
+                var objModel = new
+                {
+                    Email = email,
+                    Name = name,
+                    Surname = surname,
+                    BirthDate = setDate,
+                    MobileNo = mobileNo,
+                    Gender = gender,
+                    Pin = pinNumber,
+                    RePin = rePinNumber
+                };
+                StringContent requestMessage = new StringContent($"{JsonConvert.SerializeObject(objModel)}", Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(host, requestMessage);
+                var body = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ResultModel<RegisModel>>(body);
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<RegisModel>()
+                {
+                    Status = (int)StatusType.StatusRetureData.ShowMessage,
+                    Message = "ระบบเกิดความผิดพลาด"
+                };
+            }
+        }
+
+        private async Task<ResultModel<bool>> VerifiedEmailForRegis()
+        {
+            try
+            {
+                string host = helperSetting.Host + "user/checkemail";
+                var objModel = new
+                {
+                    Email = email,
+                    Otp = pinNumber
+                };
+                StringContent requestMessage = new StringContent($"{JsonConvert.SerializeObject(objModel)}", Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(host, requestMessage);
+                var body = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ResultModel<bool>>(body);
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<bool>()
+                {
+                    Status = (int)StatusType.StatusRetureData.ShowMessage,
+                    Message = "ระบบเกิดความผิดพลาด"
+                };
             }
         }
 
@@ -542,23 +760,24 @@ namespace CRateWallet.ViewModels
         }
 
         public ICommand GoBackByPin { get; set; }
-        private async void BackByPinMethod(int check)
+        private async void BackByPinMethod()
         {
-            if(check == 1)
+            if(checkPin == (int)StatusType.PinPage.SetPassword)
             {
                 await Application.Current.MainPage.Navigation.PushAsync(new UserData(email));
             }
-            else if(check == 2)
+            else if(checkPin == (int)StatusType.PinPage.ReSetPaqssword)
             {
-                await Application.Current.MainPage.Navigation.PushAsync(new CheckPin(1, name, surname, birthDate, mobileNo, gender, email, null, null));
+                await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SetPassword, name, surname, birthDate, mobileNo, gender, email, null, null));
             }
-            else if (check == 3)
+            else if (checkPin == (int)StatusType.PinPage.SentOTPRegis)
             {
                 await Application.Current.MainPage.Navigation.PopToRootAsync();
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("ERROE!!!", "SERVER ERROR", "OK");
+                await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดตอดต่อผู้ดูแล", "ตกลง");
+                await Application.Current.MainPage.Navigation.PopToRootAsync();
             }
         }
 
@@ -605,7 +824,16 @@ namespace CRateWallet.ViewModels
         public ICommand GoToCheckPinPage { get; set; }
         private async void CheckCheckPinMethod()
         {
-            await Application.Current.MainPage.Navigation.PushAsync(new CheckPin(1, name, surname, birthDate, mobileNo, gender, email, null, null));
+            await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SetPassword, name, surname, birthDate, mobileNo, gender, email, null, null));
+        }
+
+        public ICommand GoToSentOtpRegis { get; set; }
+        private async void SentOtpRegisMethod()
+        {
+            if(checkPin == (int)StatusType.PinPage.SentOTPRegis)
+            {
+                await GetRequestOtpForRegis();
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
