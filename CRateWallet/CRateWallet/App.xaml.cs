@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CRateWallet.Views;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -10,7 +11,8 @@ namespace CRateWallet
         {
             InitializeComponent();
 
-            MainPage = new MainPage();
+            //MainPage = new MainPage();
+            MainPage = new NavigationPage(new RegisEmailPage());
         }
 
         protected override void OnStart()

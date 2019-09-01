@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:binding="clr-namespace:CRateWallet.ViewModels"
+             mc:Ignorable="d"
+             x:Name="TheCheckPin"
+             x:Class="CRateWallet.Views.CheckPin">
+    <ContentPage.BindingContext>
+        <binding:UserViewModels/>
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid Margin="15" HorizontalOptions="FillAndExpand">
+                <Image Source="back" HorizontalOptions="StartAndExpand">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer x:Name="CheckCommand" Command="{Binding GoBackByPin}"/>
+                    </Image.GestureRecognizers>
+                </Image>
+                <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label Text="{Binding TitlePin}" FontSize="24" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                </StackLayout>
+            </Grid>
+            <StackLayout VerticalOptions="CenterAndExpand" >
+                <Image Source="{Binding ImgPin}" VerticalOptions="CenterAndExpand"/>
+                <Label Text="{Binding BlackTextPin}" FontSize="18" HorizontalTextAlignment="Center"/>
+                <Label Text="{Binding GrayTextPin}" FontSize="18" HorizontalTextAlignment="Center"/>
+                <Label Text="{Binding ReferencePin}" FontSize="18" HorizontalTextAlignment="Center" IsVisible="{Binding CheckRefPin}"/>
+                <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand" BindableLayout.ItemsSource="{Binding RoundColor}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Frame CornerRadius="180" HeightRequest="25" WidthRequest="25" Padding="0" BorderColor="#BCC0B9" BackgroundColor="{Binding Color}"/>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+                <Label Text="{Binding SentPinCom}" FontSize="18" HorizontalTextAlignment="Center" IsVisible="{Binding CheckSentPin}"/>
+                <Label Text="{Binding WanningTextPin}" FontSize="18" HorizontalTextAlignment="Center" IsVisible="{Binding CheckWanPin}"/>
+            </StackLayout>
+            <Grid VerticalOptions="EndAndExpand" BackgroundColor="Orange" BindableLayout.ItemsSource="{Binding KeyboardData}" Margin="0,0,0,-7">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Grid.Row="{Binding Row}" Grid.Column="{Binding Column}">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer CommandParameter="{Binding Value,StringFormat='10{0}'}" Command="{Binding BindingContext.InputOTP,Source={x:Reference TheCheckPin}}"/>
+                            </Grid.GestureRecognizers>
+                            <Label Text="{Binding Value}" TextColor="White" FontSize="28" Margin="0,10,0,10" HorizontalTextAlignment="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </Grid>
+            <Grid VerticalOptions="End" BackgroundColor="Orange">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0" Grid.Column="1">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer CommandParameter="100" Command="{Binding InputOTP}"/>
+                    </Grid.GestureRecognizers>
+                    <Label Text="0" TextColor="White" FontSize="28" Margin="0,10,0,10" HorizontalTextAlignment="Center"/>
+                </Grid>
+                <Grid  Grid.Row="0" Grid.Column="2" HeightRequest="25" VerticalOptions="CenterAndExpand">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding DeletePin}"/>
+                    </Grid.GestureRecognizers>
+                    <Image Source="backwhite"/>
+                </Grid>
+            </Grid>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

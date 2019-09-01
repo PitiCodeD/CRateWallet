@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ren="clr-namespace:CRateWallet.CustomRenderer"
+             xmlns:binding="clr-namespace:CRateWallet.ViewModels"
+             xmlns:kitkat="clr-namespace:Plugin.InputKit.Shared.Controls;assembly=Plugin.InputKit"
+             mc:Ignorable="d"
+             NavigationPage.HasNavigationBar="False"
+             x:Class="CRateWallet.Views.UserData">
+    <ContentPage.BindingContext>
+        <binding:UserViewModels/>
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid Margin="15" HorizontalOptions="FillAndExpand">
+                <Image Source="back" HorizontalOptions="StartAndExpand">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding GoToRootPage}"/>
+                    </Image.GestureRecognizers>
+                </Image>
+                <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label Text="ลงทะเบียน" FontSize="24" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                </StackLayout>
+            </Grid>
+            <ScrollView>
+                <StackLayout>
+                    
+                    <Frame Padding="8" CornerRadius="5" Margin="15,3,15,3">
+                        <StackLayout>
+                            <Label Text="ฃื่อจริง" FontSize="14"/>
+                            <ren:BlankEntry Text="{Binding Name}" FontSize="18"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Padding="8" CornerRadius="5" Margin="15,3,15,3">
+                        <StackLayout>
+                            <Label Text="นามสกุล" FontSize="14"/>
+                            <ren:BlankEntry Text="{Binding Surname}" FontSize="18"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Padding="8" CornerRadius="5" Margin="15,3,15,3">
+                        <StackLayout>
+                            <Label Text="วันเ/เดือน/ปี เกิด" FontSize="14"/>
+                            <ren:BlankEntry Text="{Binding BirthDate}" Keyboard="Numeric" FontSize="18" MaxLength="10"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Padding="8" CornerRadius="5" Margin="15,3,15,3">
+                        <StackLayout>
+                            <Label Text="หมายเลขโทรศัทพ์มือถือ" FontSize="14"/>
+                            <ren:BlankEntry Text="{Binding MobileNo}" Keyboard="Telephone" FontSize="18" MaxLength="10"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Padding="8" CornerRadius="5" Margin="15,3,15,3">
+                        <StackLayout>
+                            <Label Text="เพศ" FontSize="14"/>
+                            <kitkat:RadioButtonGroupView Orientation="Horizontal" HorizontalOptions="CenterAndExpand" SelectedIndex="{Binding Gender}">
+                                <kitkat:RadioButton Value="1" Color="#7C8476" Text="ชาย" TextFontSize="14" Margin="0,0,5,0"/>
+                                <kitkat:RadioButton Value="2" Color="#7C8476" Text="หญิง" TextFontSize="14" Margin="5,0,0,0"/>
+                            </kitkat:RadioButtonGroupView>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Padding="8" CornerRadius="5" Margin="15,3,15,3">
+                        <StackLayout>
+                            <Label Text="อีเมล" FontSize="14"/>
+                            <ren:BlankEntry Text="{Binding Email}" FontSize="18"/>
+                        </StackLayout>
+                    </Frame>
+                    <Button Text="ถัดไป" FontSize="20" TextColor="White" BackgroundColor="Orange" CornerRadius="5" Margin="20,40,20,5" Command="{Binding GoToCheckPinPage}"/>
+                    <Label Text="{Binding Gender,StringFormat='Test : {0}'}" HorizontalOptions="Center" FontSize="20"/>
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
