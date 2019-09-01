@@ -505,7 +505,7 @@ namespace CRateWallet.ViewModels
                 var body = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<ResultModel<string>>(body);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return new ResultModel<string>()
                 {
@@ -576,6 +576,7 @@ namespace CRateWallet.ViewModels
                             {
                                 await SecureStorage.SetAsync("RefreshToken", dataToken.Data.RefreshToken);
                                 await SecureStorage.SetAsync("AccessToken", dataToken.Data.AccessToken);
+                                await TestSecureStorage();
                                 await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataToken.Message, "ตกลง");
                                 await Application.Current.MainPage.Navigation.PushAsync(new RegisSuccess());
                             }
@@ -687,7 +688,7 @@ namespace CRateWallet.ViewModels
                 var body = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<ResultModel<RegisModel>>(body);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return new ResultModel<RegisModel>()
                 {
@@ -712,7 +713,7 @@ namespace CRateWallet.ViewModels
                 var body = await response.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<ResultModel<bool>>(body);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return new ResultModel<bool>()
                 {

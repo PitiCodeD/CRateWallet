@@ -57,7 +57,7 @@
                     <DataTemplate>
                         <Grid Grid.Row="{Binding Row}" Grid.Column="{Binding Column}">
                             <Grid.GestureRecognizers>
-                                <TapGestureRecognizer CommandParameter="{Binding Value}" Command="{Binding BindingContext.InputOTP,Source={x:Reference TheCheckPin}}"/>
+                                <TapGestureRecognizer CommandParameter="{Binding Value, StringFormat='{0}'}" Command="{Binding BindingContext.InputOTP ,Source={x:Reference TheCheckPin}}"/>
                             </Grid.GestureRecognizers>
                             <Label Text="{Binding Value}" TextColor="White" FontSize="28" Margin="0,10,0,10" HorizontalTextAlignment="Center"/>
                         </Grid>
