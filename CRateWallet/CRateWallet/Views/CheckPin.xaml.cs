@@ -80,21 +80,22 @@ namespace CRateWallet.Views
 
         private void CheckEmailPageMethod()
         {
-            if (thisCheck == 1)
+            if (thisCheck == (int)StatusType.PinPage.SetPassword)
             {
                 Navigation.PushAsync(new UserData(thisEmail));
             }
-            else if (thisCheck == 2)
+            else if (thisCheck == (int)StatusType.PinPage.ReSetPaqssword)
             {
-                Navigation.PushAsync(new CheckPin(1, thisName, thisSurname, thisBirthDate, thisMobileNo, thisGender, thisEmail, null, null));
+                Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SetPassword, thisName, thisSurname, thisBirthDate, thisMobileNo, thisGender, thisEmail, null, null));
             }
-            else if (thisCheck == 3)
+            else if (thisCheck == (int)StatusType.PinPage.SentOTPRegis)
             {
                 Navigation.PopToRootAsync();
             }
             else
             {
-                DisplayAlert("ERROE!!!", "SERVER ERROR", "OK");
+                DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดตอดต่อผู้ดูแล", "ตกลง");
+                Navigation.PopToRootAsync();
             }
         }
     }
