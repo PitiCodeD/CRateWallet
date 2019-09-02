@@ -1,6 +1,9 @@
 ﻿using CRateWallet.Models;
 using CRateWallet.Views;
+using MvvmCross.Platform;
 using Newtonsoft.Json;
+using Plugin.Fingerprint;
+using Plugin.Fingerprint.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,6 +34,8 @@ namespace CRateWallet.ViewModels
             GoToRootPage = new Command(RootPageMethod);
             GoBackByPin = new Command(BackByPinMethod);
             GoToSentOtpRegis = new Command(SentOtpRegisMethod);
+            GoToSetFingerPrint = new Command(SetFingerPrintMethod);
+            GoToHomePage = new Command(HomePageMethod);
             pinNumber = "";
             email = "";
             name = "";
@@ -69,7 +74,7 @@ namespace CRateWallet.ViewModels
 
         private void DataPinPage()
         {
-            if (checkPin == 1)
+            if (checkPin == (int)StatusType.PinPage.SetPassword || checkPin == (int)StatusType.PinPage.ChangePassword)
             {
                 TitlePin = "สร้างรหัสผ่าน";
                 ImgPin = "lock";
@@ -80,7 +85,7 @@ namespace CRateWallet.ViewModels
                 CheckSentPin = false;
                 CheckWanPin = false;
             }
-            else if (checkPin == 2)
+            else if (checkPin == (int)StatusType.PinPage.ReSetPaqssword || checkPin == (int)StatusType.PinPage.ReChangePassword)
             {
                 TitlePin = "ยืนยันรหัสผ่าน";
                 ImgPin = "lock";
@@ -91,7 +96,7 @@ namespace CRateWallet.ViewModels
                 CheckSentPin = false;
                 CheckWanPin = false;
             }
-            else if (checkPin == 3)
+            else if (checkPin == (int)StatusType.PinPage.SentOTPRegis || checkPin == (int)StatusType.PinPage.SentOTPLogin)
             {
                 TitlePin = "การยืนยัน OTP";
                 ImgPin = "mail";
@@ -483,6 +488,12 @@ namespace CRateWallet.ViewModels
                 {
                     await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
                 }
+                else if (dataOtp.Status == (int)StatusType.StatusRetureData.SecondLogin)
+                {
+                    string referenceOtp = "ref. " + dataOtp.Data;
+                    await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataOtp.Message, "ตกลง");
+                    await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SentOTPLogin, null, null, null, null, null, email, null, referenceOtp));
+                }
                 else
                 {
                     await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
@@ -661,10 +672,143 @@ namespace CRateWallet.ViewModels
                     }
                 }
             }
+            else if(checkPin == (int)StatusType.PinPage.SentOTPLogin)
+            {
+                var dataCheckEmail = await VerifiedEmailForChangePin();
+                if (dataCheckEmail == null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                    await Application.Current.MainPage.Navigation.PopToRootAsync();
+                }
+                else
+                {
+                    if (dataCheckEmail.Status == (int)StatusType.StatusRetureData.Success)
+                    {
+                        await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataCheckEmail.Message, "ตกลง");
+                        await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.ChangePassword, null, null, null, null, null, email, null, null));
+                    }
+                    else if (dataCheckEmail.Status == (int)StatusType.StatusRetureData.ShowMessage)
+                    {
+                        WanningTextPin = dataCheckEmail.Message;
+                        CheckWanPin = true;
+                        pinNumber = "";
+                        ChangeColorPin(0);
+                    }
+                    else if (dataCheckEmail.Status == (int)StatusType.StatusRetureData.NotShowMessage)
+                    {
+                        WanningTextPin = "ระบบไม่สามารถใช้ได้";
+                        CheckWanPin = true;
+                        pinNumber = "";
+                        ChangeColorPin(0);
+                    }
+                    else
+                    {
+                        await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                        await Application.Current.MainPage.Navigation.PopToRootAsync();
+                    }
+                }
+            }
+            else if (checkPin == (int)StatusType.PinPage.ChangePassword)
+            {
+                await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.ReChangePassword, null, null, null, null, null, email, pinNumber, null));
+            }
+            else if (checkPin == (int)StatusType.PinPage.ReChangePassword)
+            {
+                var check = CheckreRePin();
+                if (check.Status)
+                {
+                    var dataToken = await ChangePin();
+                    if (dataToken == null)
+                    {
+                        await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                        await Application.Current.MainPage.Navigation.PopToRootAsync();
+                    }
+                    else
+                    {
+                        if (dataToken.Status == (int)StatusType.StatusRetureData.Success)
+                        {
+                            try
+                            {
+                                await SecureStorage.SetAsync("RefreshToken", dataToken.Data.RefreshToken);
+                                await SecureStorage.SetAsync("AccessToken", dataToken.Data.AccessToken);
+                                await TestSecureStorage();
+                                await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", dataToken.Message, "ตกลง");
+                                HomePageMethod();
+                            }
+                            catch (Exception)
+                            {
+                                await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "อุปกรณ์ของท่านไม่สามารถใฃ้แอพพลิเคชั่นนี้ได้", "ตกลง");
+                                await Application.Current.MainPage.Navigation.PopToRootAsync();
+                            }
+
+                        }
+                        else if (dataToken.Status == (int)StatusType.StatusRetureData.ShowMessage)
+                        {
+                            WanningTextPin = dataToken.Message;
+                            CheckWanPin = true;
+                            pinNumber = "";
+                            ChangeColorPin(0);
+                        }
+                        else if (dataToken.Status == (int)StatusType.StatusRetureData.NotShowMessage)
+                        {
+                            WanningTextPin = "ระบบไม่สามารถใช้ได้";
+                            CheckWanPin = true;
+                            pinNumber = "";
+                            ChangeColorPin(0);
+                        }
+                        else if (dataToken.Status == (int)StatusType.StatusRetureData.BackToFirstPage)
+                        {
+                            WanningTextPin = "ระบบไม่สามารถใช้ได้";
+                            CheckWanPin = true;
+                            pinNumber = "";
+                            ChangeColorPin(0);
+                            await Application.Current.MainPage.Navigation.PopToRootAsync();
+                        }
+                        else
+                        {
+                            await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดกรอกข้อมูลใหม่อีกครั้ง", "ตกลง");
+                            await Application.Current.MainPage.Navigation.PopToRootAsync();
+                        }
+                    }
+                }
+                else
+                {
+                    WanningTextPin = check.Message;
+                    CheckWanPin = true;
+                    pinNumber = "";
+                    ChangeColorPin(0);
+                }
+            }
             else
             {
                 await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ระบบเกิดความผิดพลาดโปรดตอดต่อผู้ดูแล", "ตกลง");
                 await Application.Current.MainPage.Navigation.PopToRootAsync();
+            }
+        }
+
+        private async Task<ResultModel<RegisModel>> ChangePin()
+        {
+            try
+            {
+                string host = helperSetting.Host + "user/changepin";
+                var objModel = new
+                {
+                    Email = email,
+                    Pin = pinNumber,
+                    RePin = rePinNumber
+                };
+                StringContent requestMessage = new StringContent($"{JsonConvert.SerializeObject(objModel)}", Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(host, requestMessage);
+                var body = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ResultModel<RegisModel>>(body);
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<RegisModel>()
+                {
+                    Status = (int)StatusType.StatusRetureData.ShowMessage,
+                    Message = "ระบบเกิดความผิดพลาด"
+                };
             }
         }
 
@@ -704,6 +848,31 @@ namespace CRateWallet.ViewModels
             try
             {
                 string host = helperSetting.Host + "user/checkemail";
+                var objModel = new
+                {
+                    Email = email,
+                    Otp = pinNumber
+                };
+                StringContent requestMessage = new StringContent($"{JsonConvert.SerializeObject(objModel)}", Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await client.PostAsync(host, requestMessage);
+                var body = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<ResultModel<bool>>(body);
+            }
+            catch (Exception e)
+            {
+                return new ResultModel<bool>()
+                {
+                    Status = (int)StatusType.StatusRetureData.ShowMessage,
+                    Message = "ระบบเกิดความผิดพลาด"
+                };
+            }
+        }
+
+        private async Task<ResultModel<bool>> VerifiedEmailForChangePin()
+        {
+            try
+            {
+                string host = helperSetting.Host + "user/checkemailpin";
                 var objModel = new
                 {
                     Email = email,
@@ -771,9 +940,17 @@ namespace CRateWallet.ViewModels
             {
                 await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SetPassword, name, surname, birthDate, mobileNo, gender, email, null, null));
             }
-            else if (checkPin == (int)StatusType.PinPage.SentOTPRegis)
+            else if (checkPin == (int)StatusType.PinPage.SentOTPRegis || checkPin == (int)StatusType.PinPage.SentOTPLogin)
             {
                 await Application.Current.MainPage.Navigation.PopToRootAsync();
+            }
+            else if (checkPin == (int)StatusType.PinPage.ChangePassword)
+            {
+                await Application.Current.MainPage.Navigation.PopToRootAsync();
+            }
+            else if (checkPin == (int)StatusType.PinPage.ReChangePassword)
+            {
+                await Application.Current.MainPage.Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.ChangePassword, null, null, null, null, null, email, null, null));
             }
             else
             {
@@ -835,6 +1012,28 @@ namespace CRateWallet.ViewModels
             {
                 await GetRequestOtpForRegis();
             }
+        }
+
+        public ICommand GoToSetFingerPrint { get; set; }
+        private async void SetFingerPrintMethod()
+        {
+            var result = await CrossFingerprint.Current.AuthenticateAsync("แสนก Fingeprint เพื่อยืนยัน");
+            if (result.Authenticated)
+            {
+                Preferences.Set("FingerPrint", true);
+                await Application.Current.MainPage.DisplayAlert("ทำรายการสำเร็จ", "เปิดระบบแสกนลายนิ้วมือ", "ตกลง");
+            }
+            else
+            {
+                Preferences.Set("FingerPrint", false);
+                await Application.Current.MainPage.DisplayAlert("เกิดความผิดพลาด!!!", "ลายนิ้วมือไม่ถูกต้อง", "ตกลง");
+            }
+        }
+
+        public ICommand GoToHomePage { get; set; }
+        private void HomePageMethod()
+        {
+            Application.Current.MainPage = new NavigationPage(new TabHome());
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

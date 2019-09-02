@@ -21,6 +21,7 @@ namespace CRateWallet
             ShowMessage,
             NotShowMessage,
             BackToFirstPage,
+            SecondLogin
         }
 
         public enum PinPage
@@ -28,7 +29,10 @@ namespace CRateWallet
             Null,
             SetPassword,
             ReSetPaqssword,
-            SentOTPRegis
+            SentOTPRegis,
+            SentOTPLogin,
+            ChangePassword,
+            ReChangePassword
         }
     }
 }

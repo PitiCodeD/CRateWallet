@@ -88,9 +88,17 @@ namespace CRateWallet.Views
             {
                 Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.SetPassword, thisName, thisSurname, thisBirthDate, thisMobileNo, thisGender, thisEmail, null, null));
             }
-            else if (thisCheck == (int)StatusType.PinPage.SentOTPRegis)
+            else if (thisCheck == (int)StatusType.PinPage.SentOTPRegis || thisCheck == (int)StatusType.PinPage.SentOTPLogin)
             {
                 Navigation.PopToRootAsync();
+            }
+            else if (thisCheck == (int)StatusType.PinPage.ChangePassword)
+            {
+                Navigation.PopToRootAsync();
+            }
+            else if (thisCheck == (int)StatusType.PinPage.ReChangePassword)
+            {
+                Navigation.PushAsync(new CheckPin((int)StatusType.PinPage.ChangePassword, null, null, null, null, null, thisEmail, null, null));
             }
             else
             {
