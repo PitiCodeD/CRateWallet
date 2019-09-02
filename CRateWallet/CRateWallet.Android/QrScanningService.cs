@@ -18,6 +18,7 @@ namespace CRateWallet.Droid
 {
     public class QrScanningService : IQrScanningService
     {
+        MobileBarcodeScanner PubScan;
         public async Task<string> ScanAsync()
         {
             var optionsDefault = new MobileBarcodeScanningOptions();
@@ -29,7 +30,11 @@ namespace CRateWallet.Droid
                 BottomText = "Please Wait",
                 CancelButtonText = "CANCEL",
             };
-
+            PubScan = scanner;
+            Xamarin.Forms.Button button = new Xamarin.Forms.Button()
+            {
+                Text = "CancelQR"
+            };
             var scanResult = await scanner.Scan(optionsCustom);
             return scanResult.Text;
         }
