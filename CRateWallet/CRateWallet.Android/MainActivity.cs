@@ -20,6 +20,8 @@ namespace CRateWallet.Droid
             ToolbarResource = Resource.Layout.Toolbar;
 
             base.OnCreate(savedInstanceState);
+            ZXing.Mobile.MobileBarcodeScanner.Initialize(Application);
+            ZXing.Net.Mobile.Forms.Android.Platform.Init();
             CrossCurrentActivity.Current.Init(this, savedInstanceState);
             CrossFingerprint.SetCurrentActivityResolver(() => CrossCurrentActivity.Current.Activity);
             CrossFingerprint.SetDialogFragmentType<MyCustomDialogFragment>();
@@ -31,7 +33,7 @@ namespace CRateWallet.Droid
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
+            global::ZXing.Net.Mobile.Android.PermissionsHandler.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }

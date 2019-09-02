@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CRateWallet
 {
-    static class StatusType
+    public static class StatusType
     {
         public enum UserType
         {

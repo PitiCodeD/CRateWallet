@@ -3,9 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:binding="clr-namespace:CRateWallet.ViewModels"
+             xmlns:local="clr-namespace:CRateWallet"
              mc:Ignorable="d"
              NavigationPage.HasBackButton="False"
              x:Class="CRateWallet.Views.Home">
+    <ContentPage.BindingContext>
+        <binding:PaymentViewModels/>
+    </ContentPage.BindingContext>
     <ContentPage.Content>
         <StackLayout>
             <StackLayout VerticalOptions="StartAndExpand" HeightRequest="300" BackgroundColor="BlueViolet">
@@ -33,12 +38,18 @@
                 <Grid>
                     <Frame Grid.Row="0" Grid.Column="0" Padding="0" HasShadow="True" Margin="10">
                         <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="150" WidthRequest="150">
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToScanQrCode}" CommandParameter="2"/>
+                            </StackLayout.GestureRecognizers>
                             <Image Source="qr" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
                             <Label Text="แสกนจ่าย" HorizontalOptions="CenterAndExpand"/>
                         </StackLayout>
                     </Frame>
                     <Frame Grid.Row="0" Grid.Column="1" Padding="0" HasShadow="True" Margin="10">
                         <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="150" WidthRequest="150">
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding GoToScanQrCode}" CommandParameter="3"/>
+                            </StackLayout.GestureRecognizers>
                             <Image Source="phone" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
                             <Label Text="เติมเงิน" HorizontalOptions="CenterAndExpand"/>
                         </StackLayout>
