@@ -11,8 +11,8 @@
             x:Class="CRateWallet.Views.TabHome">
   <!--Pages can be added as references or inline-->
     <TabbedPage.Children>
-        <local:Home Title="หน้าแรก"/>
-        <local:Transaction Title="ประวัติการใช้งาน"/>
-        <local:Profile Title="ข้อมูลส่วนตัว"/> 
+        <local:Home Title="หน้าแรก" IconImageSource="home"/>
+        <local:Transaction Title="ประวัติการใช้งาน" IconImageSource="list"/>
+        <local:Profile Title="ข้อมูลส่วนตัว" IconImageSource="profile"/> 
     </TabbedPage.Children>
 </TabbedPage>

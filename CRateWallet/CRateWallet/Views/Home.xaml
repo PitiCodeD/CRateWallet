@@ -8,9 +8,55 @@
              x:Class="CRateWallet.Views.Home">
     <ContentPage.Content>
         <StackLayout>
-            <Label Text="Welcome to Xamarin.Forms!"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+            <StackLayout VerticalOptions="StartAndExpand" HeightRequest="300" BackgroundColor="BlueViolet">
+                <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+                    <Image Source="icechan" Aspect="Fill"/>
+                    <BoxView BackgroundColor="Black" Opacity="0.5" VerticalOptions="EndAndExpand" HeightRequest="80"/>
+                    <StackLayout VerticalOptions="Fill">
+                        <StackLayout Orientation="Horizontal" VerticalOptions="CenterAndExpand" Margin="30">
+                            <StackLayout>
+                                <Label Text="ยินดีตอนรับคุณทดสอบ3 มือถือ" FontSize="20" TextColor="White"/>
+                                <Label Text="สวัสดีตอนเฃ้า" FontSize="14" TextColor="White"/>
+                            </StackLayout>
+                        </StackLayout>
+                        <StackLayout VerticalOptions="EndAndExpand" Orientation="Horizontal" HeightRequest="80">
+                            <Label Text="ยอดเงินคงเหลือ" TextColor="White" FontSize="20" FontAttributes="Bold" Margin="15" VerticalOptions="CenterAndExpand"/>
+                            <StackLayout Orientation="Horizontal" Margin="15" HorizontalOptions="EndAndExpand">
+                                <Label Text="3000.00" TextColor="White" FontSize="36" VerticalTextAlignment="Start"/>
+                                <Label Text="THB" TextColor="White" FontSize="14" VerticalTextAlignment="Start"/>
+                            </StackLayout>
+                        </StackLayout>
+                    </StackLayout>
+                </Grid>
+            </StackLayout>
+            <ScrollView VerticalOptions="Start">
+                <Grid>
+                    <Frame Grid.Row="0" Grid.Column="0" Padding="0" HasShadow="True" Margin="10">
+                        <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="150" WidthRequest="150">
+                            <Image Source="qr" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                            <Label Text="แสกนจ่าย" HorizontalOptions="CenterAndExpand"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Grid.Row="0" Grid.Column="1" Padding="0" HasShadow="True" Margin="10">
+                        <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="150" WidthRequest="150">
+                            <Image Source="phone" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                            <Label Text="เติมเงิน" HorizontalOptions="CenterAndExpand"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Grid.Row="1" Grid.Column="0" Padding="0" HasShadow="True" Margin="10">
+                        <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="150" WidthRequest="150">
+                            <Image Source="phone" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                            <Label Text="Coming soon" HorizontalOptions="CenterAndExpand"/>
+                        </StackLayout>
+                    </Frame>
+                    <Frame Grid.Row="1" Grid.Column="1" Padding="0" HasShadow="True" Margin="10">
+                        <StackLayout VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="150" WidthRequest="150">
+                            <Image Source="phone" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                            <Label Text="Coming soon" HorizontalOptions="CenterAndExpand"/>
+                        </StackLayout>
+                    </Frame>
+                </Grid>
+            </ScrollView>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
